@@ -127,7 +127,7 @@ fi
             # We use short_path because it's a runfile
             "{CHART_PATH}": chart.short_path,
             "{CHART_NAME}": chart_name,
-            "{HELM_BINARY}": helm_bin.path,
+            "{HELM_BINARY}": helm_bin.short_path,
             "{REMOTE}": repo_url,
             "{REPO_CONFIG_PATH}": repo_config_path
         },
