@@ -153,7 +153,7 @@ load("@masorange_rules_helm//gcs/private:gcloud_toolchain.bzl", "gcloud_toolchai
 
 exports_files(["bin/gcloud", "bin/gsutil", "lib/gcloud.py"])
 
-gcloud_toolchain(name = "gcloud_toolchain", gcloud_bin = "bin/gcloud", gsutil_bin = "bin/gsutil", gcloud_files = ".", visibility = ["//visibility:public"])
+gcloud_toolchain(name = "gcloud_toolchain", gcloud_bin = "bin/gcloud", gsutil_bin = "bin/gsutil", gcloud_files = "lib/gcloud.py", visibility = ["//visibility:public"])
 """
 
     # Base BUILD file for this repository
