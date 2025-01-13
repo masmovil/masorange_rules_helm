@@ -1,5 +1,5 @@
-load("//helm:defs.bzl", "helm_chart", "helm_release")
-load("//sops:defs.bzl", "sops_decrypt")
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_release")
+load("@masorange_rules_helm//sops:defs.bzl", "sops_decrypt")
 
 helm_chart(
     name = "package",
@@ -9,7 +9,8 @@ helm_chart(
 
 sops_decrypt(
     name = "decrypt",
-    srcs = [":secrets.enc.yaml"]
+    srcs = [":encrypted.secret.yaml"],
+    age_keys_file = "sops/age_keys.txt",
 )
 
 helm_release(
