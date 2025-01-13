@@ -1,4 +1,4 @@
-load("//helm:defs.bzl", "helm_release")
+load("@masorange_rules_helm//helm:defs.bzl", "helm_release")
 
 helm_release(
     name = "install",

@@ -1,4 +1,4 @@
-load("//helm:defs.bzl", "helm_chart", "helm_release")
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_release")
 
 helm_chart(
     name = "package",
@@ -12,5 +12,5 @@ helm_release(
     namespace = "myapp",
     release_name = "release-name",
     wait = True,
-    values = glob(["charts/myapp/values.yaml"]),
+    values = ["test_chart/values.yaml"],
 )

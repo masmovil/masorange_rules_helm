@@ -1,4 +1,4 @@
-load("//helm:defs.bzl", "helm_chart", "helm_push", "helm_lint_test")
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_push", "helm_lint_test")
 
 helm_chart(
     name = "package",

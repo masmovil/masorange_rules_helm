@@ -1,0 +1,15 @@
+bazel_dep(name = "masorange_rules_helm", version = "0.0.0")
+local_path_override(
+    module_name = "masorange_rules_helm",
+    path = "..",
+)
+
+bazel_dep(name = "rules_oci", version = "1.6.0")
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci.pull(
+    name = "distroless_java_image",
+    digest = "sha256:161a1d97d592b3f1919801578c3a47c8e932071168a96267698f4b669c24c76d",
+    image = "gcr.io/distroless/java17",
+)
+use_repo(oci, "distroless_java_image")

@@ -11,7 +11,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
   helm_chart(
     name = "chart_%s" % chart_data.name,
     chart_name = chart_data.name,
-    srcs = getattr(chart_data, "srcs", "") or glob(["charts/%s/**" % chart_data.name]),
+    srcs = getattr(chart_data, "srcs", "") or glob(["charts/%s/**" % chart_data.name], allow_empty = True),
     deps = getattr(chart_data, "deps", []),
     version = getattr(chart_data, "version", ""),
     path_to_chart = getattr(chart_data, "path_to_chart", ""),
