@@ -105,7 +105,7 @@ _ATTRS = dicts.add({
         "image": attr.label(allow_single_file = True, mandatory = False, doc="""
             Reference to image rule use to interpolate the image sha256 in the chart values.yaml.
             If provided, the sha256 of the image will be placed in the output values.yaml of the chart in the yaml path provided by `values_tag_yaml_path` attribute.
-            Both oci_image or container_image rules are supported."""
+            Only oci_image rules are supported."""
         ),
         "image_digest": attr.label(allow_single_file = True, mandatory = False, doc="Reference to oci_image digest file. Used internally by the macro (do not use it)."),
         "values_tag_yaml_path": attr.string(default = ".image.tag", doc="Yaml path used to set the image sha256 inside the chart values.yaml."),
