@@ -24,7 +24,7 @@ bzl_library(
 
 bzl_library(
     name = "chart_srcs",
-    srcs = ["chart_srcs.bzl", "@io_bazel_rules_docker//container:providers.bzl"],
+    srcs = ["chart_srcs.bzl"],
     visibility = [
         "//docs:__pkg__",
         "//helm:__subpackages__",

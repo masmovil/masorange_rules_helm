@@ -2,7 +2,6 @@ load("@aspect_bazel_lib//lib:copy_file.bzl", "copy_file_action")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load(":helm_chart_providers.bzl", "ChartInfo")
-load("@io_bazel_rules_docker//container:providers.bzl", "ImageInfo", "LayerInfo")
 load("@aspect_bazel_lib//lib:stamping.bzl", "STAMP_ATTRS", "maybe_stamp")
 load("@aspect_bazel_lib//lib:copy_file.bzl", "COPY_FILE_TOOLCHAINS")
 
@@ -106,7 +105,7 @@ _ATTRS = dicts.add({
         "image": attr.label(allow_single_file = True, mandatory = False, doc="""
             Reference to image rule use to interpolate the image sha256 in the chart values.yaml.
             If provided, the sha256 of the image will be placed in the output values.yaml of the chart in the yaml path provided by `values_tag_yaml_path` attribute.
-            Both oci_image or container_image rules are supported."""
+            Only oci_image rules are supported."""
         ),
         "image_digest": attr.label(allow_single_file = True, mandatory = False, doc="Reference to oci_image digest file. Used internally by the macro (do not use it)."),
         "values_tag_yaml_path": attr.string(default = ".image.tag", doc="Yaml path used to set the image sha256 inside the chart values.yaml."),
@@ -274,22 +273,11 @@ def _image_digest_processor(ctx):
     if not ctx.attr.image:
         return None
 
-    # docker_image_provider = ctx.attr.image[ImageInfo]
-    docker_image_provider = ""
+    sha_file = ctx.file.image_digest
 
-    is_oci_image = False
-
-    # Check if image attr comes from a docker_rule or oci_image
-    # look for a Docker rule ImageInfo provider
-    is_oci_image = False if docker_image_provider else True
-
-    sha_file = ctx.file.image_digest if is_oci_image else docker_image_provider.container_parts["digest"]
     sha_shell_extr_expr = "$(cat {sha_file})".format(
         sha_file=sha_file.path
     )
-
-    if not is_oci_image:
-        sha_shell_extr_expr = "sha256:" + sha_shell_extr_expr
 
     return struct(
         sha_file=sha_file,
@@ -407,7 +395,7 @@ def _chart_srcs_impl(ctx):
         values_inputs_depsets.append(depset([sha_info.sha_file]))
 
     if ctx.attr.image_tag:
-        # extract docker image info from make variable or from rule attribute
+        # extract oci image info from make variable or from rule attribute
         values[ctx.attr.values_tag_yaml_path] = ctx.attr.image_tag
 
     if ctx.attr.image_repository:
