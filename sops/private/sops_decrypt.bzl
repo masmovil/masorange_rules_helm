@@ -49,6 +49,25 @@ _DOC = """Decrypt secrets using [sops](https://github.com/mozilla/sops)
     )
     ```
 
+    You can also use [age](https://github.com/FiloSottile/age) key file to decrypt your secrets. To provide the key_file use the rule attribute `age_keys_file` to point
+    to the age keys file used to encrypt your secrets.
+
+    ```starlark
+    sops_decrypt(
+        name = "decrypt_secret_files",
+        srcs = [":secrets.yaml"],
+        age_keys_file = "sops/age_keys.txt"
+    )
+
+    helm_release(
+        name = "chart_install",
+        chart = ":chart",
+        namespace = "myapp",
+        release_name = "release-name",
+        values = glob(["charts/myapp/values.yaml"]) + [":decrypt_secret_files"],
+    )
+    ```
+
 """
 
 
@@ -57,6 +76,8 @@ def _sops_decrypt_impl(ctx):
 
     inputs = [ctx.file.sops_yaml, sops]
     outputs = []
+
+    env = dict()
 
     for src in ctx.files.srcs:
 
@@ -68,14 +89,19 @@ def _sops_decrypt_impl(ctx):
         args.add("--decrypt", src.path)
         args.add("--config", ctx.file.sops_yaml.path)
 
+        if ctx.file.age_keys_file:
+            inputs += [ctx.file.age_keys_file]
+
+            env["SOPS_AGE_KEY_FILE"] = ctx.file.age_keys_file.path
+
         outputs.append(out_file)
 
         ctx.actions.run(
             inputs = inputs + [src],
             outputs = [out_file],
             arguments = [args],
+            env = env,
             executable = sops,
-            use_default_shell_env = True
         )
 
     return [
@@ -88,8 +114,9 @@ sops_decrypt = rule(
     implementation = _sops_decrypt_impl,
     doc = _DOC,
     attrs = {
-      "srcs": attr.label_list(allow_files = True, mandatory = True, doc = ""),
-      "sops_yaml": attr.label(allow_single_file = True, mandatory = True, doc = ""),
+      "srcs": attr.label_list(allow_files = True, mandatory = True, doc = "List of encrypted files to be decrypted."),
+      "sops_yaml": attr.label(allow_single_file = True, mandatory = True, doc = "The .sops.yaml configuration file. If no provided, the macro will usually try to locate the configuration file in the same dir where the BUILD file is located."),
+      "age_keys_file": attr.label(allow_single_file = True, mandatory = False, doc = "Age file with age keys used to encrypt the secret. [Check official docs](https://github.com/getsops/sops?tab=readme-ov-file#encrypting-using-age) about how to use age with sops."),
     },
     toolchains = [
         "@masorange_rules_helm//sops:sops_toolchain_type",

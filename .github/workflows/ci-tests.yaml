@@ -17,5 +17,4 @@ jobs:
         repository-cache: true
     - name: Run integration tests
       run: |
-        gpg --import examples/release_with_secrets/pgp/sops_functional_tests_key.asc
         bazel test //... --config=ci
