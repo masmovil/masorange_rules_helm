@@ -1,0 +1,12 @@
+local_repository(
+    name = "masorange_rules_helm",
+    path = "..",
+)
+
+load("@masorange_rules_helm//:repositories.bzl", "masorange_rules_helm_repositories")
+
+masorange_rules_helm_repositories()
+
+load("@masorange_rules_helm//:config.bzl", "masorange_rules_helm_configure")
+
+masorange_rules_helm_configure()

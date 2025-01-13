@@ -1,9 +1,9 @@
-load("//helm:defs.bzl", "helm_chart")
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart")
 load("@rules_oci//oci:defs.bzl", "oci_image")
 
 oci_image(
     name = "image",
-    base = "@distroless_java",
+    base = "@distroless_java_image",
     entrypoint = [
 		"java",
 	],
@@ -12,12 +12,12 @@ oci_image(
 
 helm_chart(
 	name = "package",
-    image = ":image",
-    chart_name = "chart",
-    force_repository_append = False,
-    values_tag_yaml_path = "k8s.deployment.image.digest",
-    values = {
-      "k8s.deployment.appVersion": "v1.0.0",
-    },
+  image = ":image",
+  chart_name = "chart",
+  force_repository_append = False,
+  values_tag_yaml_path = "k8s.deployment.image.digest",
+  values = {
+    "k8s.deployment.appVersion": "v1.0.0",
+  },
 	srcs = glob(["test_chart/**/*.yaml"]),
 )
