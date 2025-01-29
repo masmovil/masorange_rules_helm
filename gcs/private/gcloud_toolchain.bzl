@@ -99,9 +99,9 @@ def _gcloud_toolchain_impl(ctx):
   gsutil=ctx.file.gsutil_bin
 
   template_variables = platform_common.TemplateVariableInfo({
-    "GCLOUD_BIN": gcloud.path,
-    "GCLOUD_FILES": gcloud_files_var.path,
-    "GSUTIL_BIN": gsutil.path,
+    "GCLOUD_BIN": gcloud.short_path,
+    "GCLOUD_FILES": gcloud_files_var.short_path,
+    "GSUTIL_BIN": gsutil.short_path,
   })
   default_info = DefaultInfo(
     files = depset([gcloud, gsutil]),
