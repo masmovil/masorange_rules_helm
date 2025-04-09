@@ -99,8 +99,7 @@ _ATTRS = {
 
 def _helm_release_impl(ctx):
     files = []
-
-    print("helm_info {}", ctx.toolchains["@masorange_rules_helm//helm:helm_toolchain_type"].helminfo.bin)
+    
     helm_bin = ctx.toolchains["@masorange_rules_helm//helm:helm_toolchain_type"].helminfo.bin
 
     namespace = ctx.attr.namespace_dep[NamespaceDataInfo].namespace if ctx.attr.namespace_dep else ctx.attr.namespace
