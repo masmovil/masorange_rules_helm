@@ -36,7 +36,7 @@ helm_release(
     chart = ":chart",
     release_name = "release-name",
     values = glob(["charts/myapp/values.yaml"]),
-    kubernetes_context = "mm-k8s-c<ontext",
+    kubernetes_context = "mm-k8s-context",
 )
 ```
 
@@ -86,7 +86,7 @@ _ATTRS = {
   "namespace_dep": attr.label(mandatory = False, doc = "A reference to a `k8s_namespace` rule from where to extract the namespace to be used to install the release.Namespace where this release is installed to. Must be a label to a k8s_namespace rule. It takes precedence over namespace"),
   "values": attr.label_list(allow_files = True, default = [], doc = "A list of value files to be provided to helm install command through -f flag."),
   "release_name": attr.string(mandatory = True, doc = "The name of the helm release to be installed or upgraded."),
-  "kubernetes_context": attr.label(mandatory = False, allow_single_file = True, doc = "Reference to a kubernetes context file used by helm binary."),
+  "kubernetes_context": attr.string(mandatory = False, doc = "The name of the kubeconfig context to use"),
   "create_namespace": attr.bool(default = True, doc = "A flag to indicate helm binary to create the kubernetes namespace if it is not already present in the cluster."),
   "wait": attr.bool(default = True, doc = "Helm flag to wait for all resources to be created to exit."),
   "set": attr.string_dict(doc = """
@@ -99,7 +99,7 @@ _ATTRS = {
 
 def _helm_release_impl(ctx):
     files = []
-
+    
     helm_bin = ctx.toolchains["@masorange_rules_helm//helm:helm_toolchain_type"].helminfo.bin
 
     namespace = ctx.attr.namespace_dep[NamespaceDataInfo].namespace if ctx.attr.namespace_dep else ctx.attr.namespace
@@ -125,7 +125,7 @@ def _helm_release_impl(ctx):
       args.append("--create-namespace")
 
     if ctx.attr.kubernetes_context:
-      args += ["--kube-context", ctx.attr.file.kubernetes_context.short_path]
+      args += ["--kube-context", ctx.attr.kubernetes_context]
 
     if ctx.attr.wait:
       args.append("--wait")
@@ -154,7 +154,7 @@ def _helm_release_impl(ctx):
         output = exec_file,
         content = """
           {helm} {args}
-        """.format(helm=helm_bin.path, args=" ".join(args)),
+        """.format(helm=helm_bin.short_path, args=" ".join(args)),
         is_executable = True
     )
 
