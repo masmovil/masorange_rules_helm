@@ -74,7 +74,7 @@ Example of use with `helm_release`:
 | <a id="k8s_namespace-gcp_gke_project"></a>gcp_gke_project |  -   | String | optional |  `""`  |
 | <a id="k8s_namespace-gcp_sa"></a>gcp_sa |  GCP Service Account in e-mail format.   | String | optional |  `""`  |
 | <a id="k8s_namespace-gcp_sa_project"></a>gcp_sa_project |  CP project name where Service Account lives.   | String | optional |  `""`  |
-| <a id="k8s_namespace-kubernetes_context"></a>kubernetes_context |  -   | String | optional |  `""`  |
+| <a id="k8s_namespace-kubernetes_context"></a>kubernetes_context |   The name of the kubeconfig context to use.    | String | optional |  `""`  |
 | <a id="k8s_namespace-kubernetes_sa"></a>kubernetes_sa |  Kubernetes Service Account to associate with Workload Identity.   | String | optional |  `""`  |
 | <a id="k8s_namespace-namespace_name"></a>namespace_name |  Name of the namespace to be created.   | String | required |  |
 | <a id="k8s_namespace-workload_identity_namespace"></a>workload_identity_namespace |  Workload Identity Namespace e.g clustername.svc.id.goog   | String | optional |  `""`  |

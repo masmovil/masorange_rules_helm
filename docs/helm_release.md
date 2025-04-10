@@ -46,7 +46,7 @@ helm_release(
     chart = ":chart",
     release_name = "release-name",
     values = glob(["charts/myapp/values.yaml"]),
-    kubernetes_context = "mm-k8s-c<ontext",
+    kubernetes_context = "mm-k8s-context",
 )
 ```
 
@@ -92,7 +92,7 @@ helm_release(
 | <a id="helm_release-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="helm_release-chart"></a>chart |  The packaged chart archive to be published. It can be a reference to a `helm_chart` rule or a reference to a helm archived file. To specify a helm chart from a remote repository use `remote_chart` instead.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="helm_release-create_namespace"></a>create_namespace |  A flag to indicate helm binary to create the kubernetes namespace if it is not already present in the cluster.   | Boolean | optional |  `True`  |
-| <a id="helm_release-kubernetes_context"></a>kubernetes_context |  Reference to a kubernetes context file used by helm binary.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
+| <a id="helm_release-kubernetes_context"></a>kubernetes_context |  The name of the kubeconfig context to use.   | String | optional |  `None`  |
 | <a id="helm_release-namespace"></a>namespace |  The namespace literal where to install the helm release. Set to `""` to use namespace from current kube context   | String | optional |  `""`  |
 | <a id="helm_release-namespace_dep"></a>namespace_dep |  A reference to a `k8s_namespace` rule from where to extract the namespace to be used to install the release.Namespace where this release is installed to. Must be a label to a k8s_namespace rule. It takes precedence over namespace   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="helm_release-release_name"></a>release_name |  The name of the helm release to be installed or upgraded.   | String | required |  |
