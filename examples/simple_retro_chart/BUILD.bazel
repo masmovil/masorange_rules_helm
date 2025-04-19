@@ -1,0 +1,19 @@
+load("@masorange_rules_helm//helm:helm.bzl", "helm_chart", "helm_push", "helm_lint_test")
+
+helm_chart(
+    name = "package",
+    chart_name = "test-chart",
+    srcs = glob(["test_chart/**"]),
+)
+
+helm_push(
+    name = "push",
+    chart = ":package",
+    repository_url = "oci://docker.pkg.dev/repository/helm-charts"
+)
+
+# already decalred in helm_chart macro as `package_lint`
+helm_lint_test(
+    name = "lint",
+    chart = ":package",
+)
