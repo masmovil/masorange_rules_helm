@@ -1,7 +1,8 @@
-"""Maintained as publi export api for retro-compatibility"""
+"""Maintained as public export api for retro-compatibility"""
 
 load("//helm:defs.bzl",
     _helm_chart = "helm_chart",
+    _helm_pull = "helm_pull",
     _helm_push = "helm_push",
     _helm_release = "helm_release",
     _helm_lint = "helm_lint_test",
