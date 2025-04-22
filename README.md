@@ -8,7 +8,7 @@ These rules support installation via both `bzlmod` and `non-bzlmod`.
 Check out [github releases page](https://github.com/masmovil/bazel-rules/releases) to see the latest version of the rules and how to install them using bazel.
 
 ## Helm
- - [helm_chart](docs/helm_chart.md) Package a helm chart into a targz archive with custom values and configuration
+ - [helm_chart](docs/helm_chart.md) Reproducible rule to package a helm chart into a targz archive with custom values and configuration
  - [helm_lint_test](docs/helm_lint.md) Lint and test that a helm chart is well-formed. Wrapper around `helm lint` command
  - [helm_push](docs/helm_push.md) Publish a helm chart produced by `helm_chart` rule to a remote registry.
  - [helm_pull](docs/helm_pull.md) Repository rule to download a `helm_chart` from a remote registry.

@@ -426,3 +426,61 @@ k8s:
     port: 1050
 """,
 )
+
+helm_chart(
+  name = "chart_a_version_file",
+  chart_name = "a_version_file",
+  version_manifest = "version.json",
+  app_version_manifest = "version.json",
+  description = "Description",
+  srcs = add_prefix_to_paths("charts/a", chart_a_srcs),
+)
+
+chart_test(
+  name = "chart_version_file_test",
+  chart_name = "a_version_file",
+  chart = ":chart_a_version_file",
+  expected_manifest = """
+apiVersion: v1
+name: a_version_file
+description: Description
+version: 1.1.1
+appVersion: 1.1.1
+""",
+  expected_values = """
+labels:
+  somelabel: labelvalue
+image:
+  tag: latest
+  repository: aio
+""",
+)
+
+helm_chart(
+  name = "chart_a_version_yaml_file",
+  chart_name = "a_version_file_yaml",
+  version_manifest = "version.yaml",
+  app_version_manifest = "version.json",
+  description = "Description",
+  srcs = add_prefix_to_paths("charts/a", chart_a_srcs),
+)
+
+chart_test(
+  name = "chart_version_yaml_file_test",
+  chart_name = "a_version_file_yaml",
+  chart = ":chart_a_version_yaml_file",
+  expected_manifest = """
+apiVersion: v1
+name: a_version_file_yaml
+description: Description
+version: 1.7.1
+appVersion: 1.1.1
+""",
+  expected_values = """
+labels:
+  somelabel: labelvalue
+image:
+  tag: latest
+  repository: aio
+""",
+)

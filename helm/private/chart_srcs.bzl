@@ -110,7 +110,9 @@ _ATTRS = dicts.add({
         "image_digest": attr.label(allow_single_file = True, mandatory = False, doc="Reference to oci_image digest file. Used internally by the macro (do not use it)."),
         "values_tag_yaml_path": attr.string(default = ".image.tag", doc="Yaml path used to set the image sha256 inside the chart values.yaml."),
         "version": attr.string(mandatory = False, doc="Helm chart version to be placed in Chart.yaml manifest"),
-        "app_version": attr.string(doc="Helm chart manifest appVersion. The value is replaced in the output Chart.yaml manifest."),
+        "version_manifest": attr.label(mandatory = False, allow_single_file = True, doc="Helm chart version file to be used to set the chart version in Chart.yaml manifest. The file can be a yaml file or a josn file containing a single key named version."),
+        "app_version": attr.string(doc="Helm chart appVersion. The value is replaced in the output Chart.yaml manifest in the appVersion key."),
+        "app_version_manifest": attr.label(mandatory = False, allow_single_file = True, doc="Helm chart appVersion file. The value is replaced in the output Chart.yaml manifest in the appVersion key. The file can be a yaml file or a json file containing a single key named version."),
         "api_version": attr.string(doc="Helm chart manifest apiVersion. The value is replaced in the output Chart.yaml manifest."),
         "description": attr.string(doc="Helm chart manifest description. The value is replaced in the output Chart.yaml manifest."),
         "deps": attr.label_list(allow_files = True, mandatory = False, providers = [ChartInfo], doc="""
@@ -185,12 +187,24 @@ def _locate_chart_roots(srcs, path_to_chart="", name=""):
         root=root_path,
     )
 
+# Returns a yq expression to extract a value from a JSON or YAML file.
+def _yq_expression_value_from_file(file, key):
+    return "(load(\"{}\") | .{} | ... style=\"\")".format(file.path, key)
+
 # get a dict with the content to populate a Chart.yaml manifest with data fom the helm chart
 def _get_manifest_subst_args(ctx, chart_deps, no_prev_manifest):
     subst_args = {}
 
     chart_name = ctx.attr.chart_name or ctx.attr.package_name
+
     version = ctx.attr.version or ctx.attr.helm_chart_version
+    app_version = ctx.file.app_version_manifest
+
+    if ctx.file.version_manifest:
+        version = _yq_expression_value_from_file(ctx.file.version_manifest, "version")
+
+    if ctx.file.app_version_manifest:
+        app_version = _yq_expression_value_from_file(ctx.file.app_version_manifest, "version")
 
     if ctx.attr.api_version or no_prev_manifest:
         subst_args["apiVersion"] = ctx.attr.api_version or DEFAULT_HELM_API_VERSION
@@ -203,9 +217,8 @@ def _get_manifest_subst_args(ctx, chart_deps, no_prev_manifest):
     if version or no_prev_manifest:
         subst_args["version"] = version or DEFAULT_HELM_CHART_VERSION
 
-    if ctx.attr.app_version:
-        subst_args["appVersion"] = ctx.attr.app_version
-
+    if app_version:
+        subst_args["appVersion"] = app_version
 
     deps_conditions = ctx.attr.deps_conditions or {}
 
@@ -235,11 +248,10 @@ def _create_yq_substitution_file(ctx, output_name, substitutions):
 
         yaml_path = _normalize_yaml_path(yaml_path)
 
-        if value.startswith("strenv("):
+        if value.startswith("strenv(") or value.startswith("(load("):
             subst_values += "{yaml} = {value}".format(yaml=yaml_path, value=value)
         else:
             subst_values += "{yaml} = \"{value}\"".format(yaml=yaml_path, value=value)
-
 
     ctx.actions.write(
         output = out_file,
@@ -298,8 +310,6 @@ def _chart_srcs_impl(ctx):
     digest_path = ""
     image_tag = ""
 
-    helm_chart_version = ctx.attr.helm_chart_version
-    app_version = ctx.attr.app_version or helm_chart_version
     chart_yaml = None
     yq_bin = ctx.toolchains["@aspect_bazel_lib//lib:yq_toolchain_type"].yqinfo.bin
     copy_to_directory_bin = ctx.toolchains["@aspect_bazel_lib//lib:copy_to_directory_toolchain_type"].copy_to_directory_info.bin
@@ -358,6 +368,12 @@ def _chart_srcs_impl(ctx):
     yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
 
     write_manifest_action_inputs = [yq_bin, yq_subst_expr]
+
+    if ctx.file.version_manifest:
+        write_manifest_action_inputs += [ctx.file.version_manifest]
+
+    if ctx.file.app_version_manifest:
+        write_manifest_action_inputs += [ctx.file.app_version_manifest]
 
     if chart_yaml:
         write_manifest_action_inputs += [chart_yaml]
