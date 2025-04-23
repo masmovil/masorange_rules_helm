@@ -1,0 +1,51 @@
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_lint_test")
+
+helm_chart(
+    name = "package_version",
+    chart_name = "test-chart",
+    srcs = glob(["test_chart/**"]),
+    version_manifest = ":app.json",
+)
+
+helm_chart(
+    name = "package_yaml",
+    chart_name = "test-chart2",
+    srcs = glob(["test_chart/**"]),
+    version_manifest = ":app.yaml",
+)
+
+helm_chart(
+    name = "package_app_version",
+    chart_name = "test-chart3",
+    srcs = glob(["test_chart/**"]),
+    app_version_manifest = ":app.json",
+)
+
+helm_chart(
+    name = "package_app_version_yaml",
+    chart_name = "test-chart4",
+    srcs = glob(["test_chart/**"]),
+    app_version_manifest = ":app.yaml",
+)
+
+# already decalred in helm_chart macro as `package_lint`
+helm_lint_test(
+    name = "lint_version",
+    chart = ":package_version",
+)
+
+helm_lint_test(
+    name = "lint_version_yaml",
+    chart = ":package_yaml",
+)
+
+helm_lint_test(
+    name = "lint_app_version",
+    chart = ":package_app_version",
+
+)
+
+helm_lint_test(
+    name = "lint_app_version_yaml",
+    chart = ":package_app_version_yaml",
+)

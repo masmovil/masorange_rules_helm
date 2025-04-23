@@ -1,0 +1,5 @@
+labels:
+  somelabel: labelvalue
+image:
+  tag: latest
+  repository: aio

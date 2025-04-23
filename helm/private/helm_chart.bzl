@@ -57,6 +57,25 @@ def helm_chart(name, chart_name, **kwargs):
             "yaml.path.to.value": "value",
         },
     )
+
+    # version file version.json
+    {
+        "version": "v1.0.0",
+    }
+
+    # BULD.bazel
+    helm_chart(
+        name = "chart",
+        chart_name = "example",
+        version_file = ":version.json",
+        app_version = "v2.3.4",
+        api_version = "v2",
+        description = "Helm chart description placed inside Chart.yaml",
+        image = ":oci_image",
+        values = {
+            "yaml.path.to.value": "value",
+        },
+    )
     ```
 
     Args:
