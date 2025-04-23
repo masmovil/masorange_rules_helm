@@ -198,7 +198,7 @@ def _get_manifest_subst_args(ctx, chart_deps, no_prev_manifest):
     chart_name = ctx.attr.chart_name or ctx.attr.package_name
 
     version = ctx.attr.version or ctx.attr.helm_chart_version
-    app_version = ctx.file.app_version_manifest
+    app_version = ctx.attr.app_version
 
     if ctx.file.version_manifest:
         version = _yq_expression_value_from_file(ctx.file.version_manifest, "version")
