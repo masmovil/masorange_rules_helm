@@ -11,6 +11,11 @@ bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "rules_pkg", version = "0.9.1")
 
 bazel_dep(name = "rules_oci", version = "1.6.0")
+
+# override zlib-1.2.13 in deps from @bazel_tools and @protobuf
+# may be removable if newer bazel versions carry in newer bazel_tools
+bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
+
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True)
 
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
