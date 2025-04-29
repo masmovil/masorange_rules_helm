@@ -1,4 +1,6 @@
 load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_push", "helm_lint_test")
+load("@masorange_rules_helm//helm:helm.bzl", retro_chart="helm_chart", retro_push="helm_push", retro_lint_test="helm_lint_test")
+
 
 helm_chart(
     name = "package",
@@ -12,8 +14,33 @@ helm_push(
     repository_url = "oci://docker.pkg.dev/repository/helm-charts"
 )
 
-# already decalred in helm_chart macro as `package_lint`
+# already declared in helm_chart macro as `package_lint`
 helm_lint_test(
     name = "lint",
     chart = ":package",
+)
+
+
+# Retro API
+#
+# These functions intentionally exercise the same functions, but with the retro API defined in
+# //helm:helm.bzl.  If you're using this example to demonstrate the ruleset working, don't copy
+# this second half: at minimum, you'll be pushing the same image twice (which is really just the
+# same index: the previously-pushed layers won't be re-pushed)
+
+retro_chart(
+    name = "retro_api_package",
+    chart_name = "retro-chart",
+    srcs = glob(["test_chart/**"]),
+)
+
+retro_push(
+    name = "retro_api_push",
+    chart = ":retro_api_package",
+    repository_url = "oci://docker.pkg.dev/repository/helm-charts"
+)
+
+retro_lint_test(
+    name = "retro_api_lint",
+    chart = ":retro_api_package",
 )
