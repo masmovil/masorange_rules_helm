@@ -18,3 +18,11 @@ jobs:
     - name: Run integration tests
       run: |
         bazel test //... --config=ci
+    - name: Validate Examples
+      # rules_bazel_integration_test doesn't apply to a lone subdir
+      # even so, I'd parallelize with a matrix of <example> x <arch>
+      #
+      # after this test, the checkout is *dirty*: the //examples/ has its own bazel-* links, which
+      # cannot be excluded with .bazelignore
+      run: |
+        (cd examples/ && bazel test //... --config=ci)
