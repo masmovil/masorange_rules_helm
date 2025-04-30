@@ -1,4 +1,4 @@
-build --enable_bzlmod
+common --enable_bzlmod
 
 test:ci --workspace_status_command=$GITHUB_WORKSPACE/stamp.sh
 
