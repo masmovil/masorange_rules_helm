@@ -14,22 +14,6 @@ load("//helm/private:chart_srcs.bzl", _chart_srcs = "chart_srcs")
 load("//helm/private:helm_pull.bzl", _helm_pull = "helm_pull", _pull_attr = "pull_attrs")
 load("//helm/private:helm_chart_providers.bzl", _chart_info = "ChartInfo", _helm_chart_providers = "helm_chart_providers")
 
-# def helm_chart(name, **kwargs):
-#     image = kwargs.get("image")
-
-#     if image:
-#         _helm_chart(
-#             name = name,
-#             image_digest = image + ".digest",
-#             **kwargs,
-#         )
-#     else:
-#         _helm_chart(
-#             name = name,
-#             **kwargs,
-#         )
-
-
 # Explicitly re-export the functions
 helm_push = _helm_push
 helm_chart = _helm_chart
