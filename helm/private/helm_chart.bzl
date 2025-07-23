@@ -10,7 +10,6 @@ def helm_chart(name, chart_name, **kwargs):
     The macro is intended to be used as the public API for packaging a chart. It is a wrapper around `chart_srcs` rule. All the args are propagated to `chart_srcs` rule.
     See [chart_srcs](#chart_srcs) arguments to see the available config.
 
-
     To load the rule use:
     ```starlark
     load("//helm:defs.bzl", "helm_chart")
@@ -22,6 +21,13 @@ def helm_chart(name, chart_name, **kwargs):
     It uses `pkg_tar` bazel rule instead to create the archive file. Check this to find more info about it:
     - https://github.com/masmovil/bazel-rules/issues/55
     - https://github.com/helm/helm/issues/3612#issuecomment-525340295
+
+    The output name of the packaged chart will be different depending on the provided inputs. If you provide a `version` attribute to the `helm_chart` rule, the rule will append the chart version to the packaged targz.
+    If you don't provide the `version` attribute, the output name of the rule will use only the chartname, not the version of the chart.
+    
+    We recommend always specifyng the `version` attribute to the `helm_chart` target. Otherwise you will face build failures if you define more than one target for the same helm chart (because both `helm_chart` rules will try to specify the same output name).
+
+    Note: This does not apply to `version_manifest`. If you provide the `version_manifest` attribute, the output generated will not have the version appended to the name.
 
     This macro exports some providers to share info about charts between rules. Check [helm_chart providers](#providers).
 
@@ -67,7 +73,7 @@ def helm_chart(name, chart_name, **kwargs):
     helm_chart(
         name = "chart",
         chart_name = "example",
-        version_file = ":version.json",
+        version_manifest = ":version.json",
         app_version = "v2.3.4",
         api_version = "v2",
         description = "Helm chart description placed inside Chart.yaml",
@@ -83,14 +89,14 @@ def helm_chart(name, chart_name, **kwargs):
         All: This is a wrapper around `chart_srcs` rule. All the args are propagated to `chart_srcs`. See [chart_srcs](#chart_srcs)
             to check the available config.
     """
+    chart_version = kwargs.get("version") or kwargs.get("helm_chart_version")
 
 
-    helm_pkg_target = "%s_package" % name
+    helm_pkg_target = "{}_{}_package".format(name, chart_version)
     helm_pkg_out_strip_target = "%s_src_helm_files" % name
     tar_target = "%s_tar" % name
 
     image = kwargs.get("image")
-    chart_version = kwargs.get("version") or kwargs.get("helm_chart_version")
     # TODO: change how visibility is propagated
     visibility = kwargs.get("visibility") or ["//visibility:public"]
 
@@ -108,13 +114,13 @@ def helm_chart(name, chart_name, **kwargs):
     pkg_files(
         name = helm_pkg_out_strip_target,
         srcs = [helm_pkg_target],
-        strip_prefix = strip_prefix.from_pkg(),
+        strip_prefix = strip_prefix.from_pkg(helm_pkg_target),
         visibility = visibility,
     )
 
     pkg_tar(
         name = tar_target,
-        out = chart_name + ".tgz",
+        out = "{}-{}.tgz".format(chart_name, chart_version) if chart_version else "{}.tgz".format(chart_name),
         extension = "tgz",
         srcs = [helm_pkg_out_strip_target],
         visibility = visibility,

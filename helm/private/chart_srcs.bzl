@@ -16,7 +16,6 @@ This rule should not be used directly, users should use `helm_chart` macro inste
 Despite, if you want to see the configuration arguments you can use to package a helm chart using `helm_chart` rule, check the arguments doc below for `chart_srcs` rule,
 as `helm_chart` is just a wrapper around `chart_srcs` rule and all the arguments are propagated to `chart_srcs` rule.
 
-
 This rule takes chart src files and write them to bazel output dir applying some modifications.
 The rule is designed to be used with a packager to produce an archived file (`pkg_tar` is used).
 
@@ -341,7 +340,7 @@ def _chart_srcs_impl(ctx):
     # copy all chart source files to the output bin directory
     # values.yaml are not copied to the output dir here to be able to modify the sources
     for file in _filter_manifest_and_values_from_files(ctx.files.srcs):
-        copied_file = ctx.actions.declare_file(paths.join(chart_name, file.path.replace(chart_root_path + "/", "")))
+        copied_file = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, file.path.replace(chart_root_path + "/", "")))
         copied_src_files += [copied_file]
         copy_file_action(
             ctx=ctx,
@@ -354,7 +353,7 @@ def _chart_srcs_impl(ctx):
     copied_tpl_files = []
 
     for template in additional_templates:
-        copied_tpl = ctx.actions.declare_file(paths.join(chart_name, "templates", template.basename))
+        copied_tpl = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "templates", template.basename))
         copied_tpl_files += [copied_tpl]
         copy_file_action(
             ctx=ctx,
@@ -363,7 +362,7 @@ def _chart_srcs_impl(ctx):
         )
 
     # rewrite Chart.yaml to override chart info
-    out_chart_yaml = ctx.actions.declare_file(paths.join(chart_name, "Chart.yaml"))
+    out_chart_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "Chart.yaml"))
 
     yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
 
@@ -444,7 +443,7 @@ def _chart_srcs_impl(ctx):
     yq_expression_file = _create_yq_substitution_file(ctx, "%s_yq_values_subst_expression_file" % ctx.attr.name, all_values)
 
     output_values_script_yaml = ctx.actions.declare_file("%s_subst_values.sh" % ctx.attr.name)
-    output_values_yaml = ctx.actions.declare_file(paths.join(chart_name, "values.yaml"))
+    output_values_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "values.yaml"))
 
     values_substitutions = {
         "{yq}": yq_bin.path,
@@ -494,7 +493,7 @@ def _chart_srcs_impl(ctx):
         dep_chart_files = _locate_chart_roots(dep.srcs, "", dep.name)
 
         for dep_src in dep.srcs:
-            out_path = paths.join(chart_name, "charts", dep.name, dep_src.path.replace(dep_chart_files.root + "/", ""))
+            out_path = paths.join(ctx.attr.name, chart_name, "charts", dep.name, dep_src.path.replace(dep_chart_files.root + "/", ""))
 
             dep_out = ctx.actions.declare_file(out_path)
 
