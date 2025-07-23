@@ -3,8 +3,9 @@ load("@masorange_rules_helm//helm:defs.bzl", "helm_chart")
 helm_chart(
     name = "package",
     chart_name = "chart",
-    srcs = glob(['test_chart/**/*.yaml'])
-    # deps = [
-    #   "@nginx-chart//:chart"
-    # ],
+    srcs = glob(['test_chart/**/*.yaml']),
+    api_version = "v2",
+    deps = [
+      "//simple_chart:package"
+    ],
 )
