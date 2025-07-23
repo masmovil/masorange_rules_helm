@@ -120,7 +120,7 @@ def helm_chart(name, chart_name, **kwargs):
 
     pkg_tar(
         name = tar_target,
-        out = "%s-%s.tgz".format(chart_name, chart_version) if chart_version else "%s.tgz".format(chart_name),
+        out = "{}-{}.tgz".format(chart_name, chart_version) if chart_version else "{}.tgz".format(chart_name),
         extension = "tgz",
         srcs = [helm_pkg_out_strip_target],
         visibility = visibility,
