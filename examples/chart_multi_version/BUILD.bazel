@@ -1,0 +1,15 @@
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart")
+
+helm_chart(
+    name = "package-stable",
+    chart_name = "testt",
+    srcs = glob(['test_chart/**/*.yaml']),
+    version = "v1-stable",
+)
+
+helm_chart(
+    name = "package",
+    chart_name = "testt",
+    srcs = glob(['test_chart/**/*.yaml']),
+    version = "1.0.0",
+)

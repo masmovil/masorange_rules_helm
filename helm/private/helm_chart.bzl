@@ -89,14 +89,14 @@ def helm_chart(name, chart_name, **kwargs):
         All: This is a wrapper around `chart_srcs` rule. All the args are propagated to `chart_srcs`. See [chart_srcs](#chart_srcs)
             to check the available config.
     """
+    chart_version = kwargs.get("version") or kwargs.get("helm_chart_version")
 
 
-    helm_pkg_target = "%s_package" % name
+    helm_pkg_target = "{}_{}_package".format(name, chart_version)
     helm_pkg_out_strip_target = "%s_src_helm_files" % name
     tar_target = "%s_tar" % name
 
     image = kwargs.get("image")
-    chart_version = kwargs.get("version") or kwargs.get("helm_chart_version")
     # TODO: change how visibility is propagated
     visibility = kwargs.get("visibility") or ["//visibility:public"]
 
@@ -114,7 +114,7 @@ def helm_chart(name, chart_name, **kwargs):
     pkg_files(
         name = helm_pkg_out_strip_target,
         srcs = [helm_pkg_target],
-        strip_prefix = strip_prefix.from_pkg(),
+        strip_prefix = strip_prefix.from_pkg(helm_pkg_target),
         visibility = visibility,
     )
 
