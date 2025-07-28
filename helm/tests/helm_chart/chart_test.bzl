@@ -1,6 +1,8 @@
 load("@aspect_bazel_lib//lib:diff_test.bzl", "diff_test")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
+load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 
 def add_prefix_to_paths(prefix, files_path):
   return [paths.join(prefix, path) for path in files_path]
@@ -41,16 +43,65 @@ def compare_to_yaml_file_test(name, yaml_file_path, explicit_yaml_to_compare, ch
 
     return  test_rulename
 
+def untar_chart(name, chart_tar, out_dir):
+    write_file(
+        name = "{}_tar_sh".format(name),
+        out = "{}_tar.sh".format(name),
+        content = [
+            "#!/usr/bin/env bash",
+            "set -e",
+            "$BSDTAR_BIN $@",
+        ],
+    )
+
+    native.sh_binary(
+        name = "{}_tar_bin".format(name),
+        srcs = [ ":{}_tar_sh".format(name) ],
+    )
+
+    # Extract the tar
+    run_binary(
+        name = name,
+        srcs = [
+            chart_tar,
+            "@bsd_tar_toolchains//:resolved_toolchain",
+        ],
+        out_dirs = [ out_dir ],
+        env = {
+            "BSDTAR_BIN": "$(BSDTAR_BIN)",
+        },
+        args = [
+            "-xvzf",
+            "$(location {})".format(chart_tar),
+            "-C",
+            "$(@)",
+        ],
+        tool = "{}_tar_bin".format(name),
+        toolchains = [ "@bsd_tar_toolchains//:resolved_toolchain" ],
+    )
+
+
 def chart_test(name, chart, chart_name, prefix_srcs = "", expected_files=[], expected_values="", expected_manifest="", expected_deps=[]):
     unpacked_chart_rule_name = "%s_unpacked" % name
 
-    # unpack helm_chart output targz
-    native.genrule(
+    untar_chart(
         name = unpacked_chart_rule_name,
-        outs = ["%s_out_dir" % unpacked_chart_rule_name],
-        tools = [chart],
-        cmd_bash = "mkdir -p $@ && tar -xvf $(location %s) -C $@" % chart,
+        chart_tar = chart,
+        out_dir = "%s_out_dir" % unpacked_chart_rule_name,
     )
+
+    # # unpack helm_chart output targz
+    # run_binary(
+    #     name = unpacked_chart_rule_name,
+
+    #     out_dirs = ["%s_out_dir" % unpacked_chart_rule_name],
+    # )
+    # native.genrule(
+    #     name = unpacked_chart_rule_name,
+    #     outs = ["%s_out_dir" % unpacked_chart_rule_name],
+    #     tools = [chart],
+    #     cmd_bash = "mkdir -p $@ && tar -xvf $(location %s) -C $@" % chart,
+    # )
 
     tests = []
 
