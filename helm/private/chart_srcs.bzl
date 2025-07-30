@@ -240,6 +240,24 @@ def _get_manifest_subst_args(ctx, chart_deps, no_prev_manifest):
 
     return subst_args
 
+def _get_requirements_subst_args(ctx, chart_deps, no_prev_manifest):
+    subst_args = {}
+
+    deps_conditions = ctx.attr.deps_conditions or {}
+
+    for i, dep in enumerate(chart_deps):
+        subst_args[".dependencies[%s].name" % i] = dep.name
+
+        if dep.version:
+            subst_args[".dependencies[%s].version" % i] = dep.version
+
+        condition = deps_conditions.get(dep.name)
+
+        if condition:
+            subst_args[".dependencies[%s].condition" % i] = condition
+
+    return subst_args
+
 
 # generate a file with a yq write expression
 def _create_yq_substitution_file(ctx, output_name, substitutions):
@@ -400,7 +418,7 @@ def _chart_srcs_impl(ctx):
     # rewrite requirements.yaml to override chart info
     out_requirements_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
 
-    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_requirements_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, requirements_yaml == None))
+    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_requirements_subst_expr" % ctx.attr.name, _get_requirements_subst_args(ctx, chart_deps, requirements_yaml == None))
 
     write_manifest_action_inputs_requirements = [yq_bin, yq_subst_expr_requirements]
 
