@@ -538,7 +538,7 @@ def _chart_srcs_impl(ctx):
     return [
         DefaultInfo(
             files = depset(
-                direct = copied_src_files + copied_tpl_files + [out_chart_yaml, output_values_yaml],
+                direct = copied_src_files + copied_tpl_files + [out_chart_yaml, output_values_yaml, out_requirements_yaml],
                 transitive = dep_copied_files_depset
             )
         )
