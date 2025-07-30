@@ -398,22 +398,22 @@ def _chart_srcs_impl(ctx):
     )
 
     # rewrite requirements.yaml to override chart info
-    out_chart_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
+    out_requirements_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
 
-    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
+    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
 
-    write_manifest_action_inputs = [yq_bin, yq_subst_expr]
+    write_manifest_action_inputs_requirements = [yq_bin, yq_subst_expr_requirements]
 
     if requirements_yaml:
-        write_manifest_action_inputs += [requirements_yaml]
+        write_manifest_action_inputs_requirements += [requirements_yaml]
 
     ctx.actions.run_shell(
-        inputs = write_manifest_action_inputs,
-        outputs = [out_chart_yaml],
+        inputs = write_manifest_action_inputs_requirements,
+        outputs = [out_requirements_yaml],
         command = "cat {requirements_manifest}| {yq} --from-file {expr_file} > {out_path}".format(
             yq = yq_bin.path,
-            expr_file = yq_subst_expr.path,
-            out_path = out_chart_yaml.path,
+            expr_file = yq_subst_expr_requirements.path,
+            out_path = out_requirements_yaml.path,
             requirements_manifest = requirements_yaml.path if requirements_yaml else "",
         ),
         progress_message = "Writing requirements.yaml file to chart output dir...",
