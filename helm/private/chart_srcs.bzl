@@ -164,6 +164,7 @@ def _filter_manifest_and_values_from_files(files):
 def _locate_chart_roots(srcs, path_to_chart="", name=""):
     chart_manifests = []
     values = []
+    requirements = []
 
     for src in srcs:
         if src.basename == "Chart.yaml":
@@ -172,17 +173,22 @@ def _locate_chart_roots(srcs, path_to_chart="", name=""):
         if src.basename == "values.yaml":
             values += [src]
 
+        if src.basename == "requirements.yaml":
+            requirements += [src]
+
     if len(srcs) > 0 and len(chart_manifests) == 0 and len(values) == 0 and not path_to_chart:
         fail("If you provide some chart source files, you have to provide either a Chart.yaml manifest either a values.yaml file or use the explicit attr 'path_to_chart'. Otherwise the root path of the chart %s cannot be located" % name)
 
     manifest = _find_outer_file(chart_manifests or [])
     value_file = _find_outer_file(values or [])
+    requirements_file = _find_outer_file(requirements or [])
 
     root_path = manifest.dirname if manifest else value_file.dirname if value_file else path_to_chart
 
     return struct(
         manifest=manifest,
         values=value_file,
+        requirements = requirements_file,
         root=root_path,
     )
 
@@ -329,6 +335,7 @@ def _chart_srcs_impl(ctx):
     chart_files = _locate_chart_roots(ctx.files.srcs, ctx.attr.path_to_chart)
     chart_root_path = chart_files.root
     chart_yaml = chart_files.manifest
+    requierements_yaml = chart_files.requierements
 
     if chart_files.values:
         values_inputs_depsets = [depset([yq_bin, chart_files.values])]
@@ -364,7 +371,7 @@ def _chart_srcs_impl(ctx):
     # rewrite Chart.yaml to override chart info
     out_chart_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "Chart.yaml"))
 
-    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
+    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, "")
 
     write_manifest_action_inputs = [yq_bin, yq_subst_expr]
 
@@ -388,6 +395,29 @@ def _chart_srcs_impl(ctx):
         ),
         progress_message = "Writing Chart.yaml file to chart output dir...",
         mnemonic = "SubstChartManifest",
+    )
+
+    # rewrite requirements.yaml to override chart info
+    out_chart_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
+
+    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
+
+    write_manifest_action_inputs = [yq_bin, yq_subst_expr]
+
+    if requierements_yaml:
+        write_manifest_action_inputs += [requierements_yaml]
+
+    ctx.actions.run_shell(
+        inputs = write_manifest_action_inputs,
+        outputs = [out_chart_yaml],
+        command = "cat {requierements_manifest}| {yq} --from-file {expr_file} > {out_path}".format(
+            yq = yq_bin.path,
+            expr_file = yq_subst_expr.path,
+            out_path = out_chart_yaml.path,
+            requierements_manifest = requierements_yaml.path if requierements_yaml else "",
+        ),
+        progress_message = "Writing requirements.yaml file to chart output dir...",
+        mnemonic = "SubstRequirementsManifest",
     )
 
     # Dictionary structure to hold substitute values
