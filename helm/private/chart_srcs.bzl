@@ -158,7 +158,7 @@ def _find_outer_file(files):
 
 # filter out from chart src files Chart.yaml manifest and values.yaml files
 def _filter_manifest_and_values_from_files(files):
-    return [f for f in files if not f.path.endswith("Chart.yaml") and not f.path.endswith("values.yaml")]
+    return [f for f in files if not f.path.endswith("Chart.yaml") and not f.path.endswith("values.yaml") and not f.path.endswith("requirements.yaml")]
 
 # locate where the helm chart root is placed
 def _locate_chart_roots(srcs, path_to_chart="", name=""):
@@ -400,7 +400,7 @@ def _chart_srcs_impl(ctx):
     # rewrite requirements.yaml to override chart info
     out_requirements_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
 
-    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_requirements_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
+    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_requirements_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, requirements_yaml == None))
 
     write_manifest_action_inputs_requirements = [yq_bin, yq_subst_expr_requirements]
 
