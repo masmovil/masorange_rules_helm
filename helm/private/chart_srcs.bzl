@@ -400,7 +400,7 @@ def _chart_srcs_impl(ctx):
     # rewrite requirements.yaml to override chart info
     out_requirements_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "requirements.yaml"))
 
-    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
+    yq_subst_expr_requirements = _create_yq_substitution_file(ctx, "%s_yq_requirements_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
 
     write_manifest_action_inputs_requirements = [yq_bin, yq_subst_expr_requirements]
 
