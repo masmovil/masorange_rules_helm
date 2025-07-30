@@ -335,7 +335,7 @@ def _chart_srcs_impl(ctx):
     chart_files = _locate_chart_roots(ctx.files.srcs, ctx.attr.path_to_chart)
     chart_root_path = chart_files.root
     chart_yaml = chart_files.manifest
-    requierements_yaml = chart_files.requierements
+    requirements_yaml = chart_files.requirements
 
     if chart_files.values:
         values_inputs_depsets = [depset([yq_bin, chart_files.values])]
@@ -404,17 +404,17 @@ def _chart_srcs_impl(ctx):
 
     write_manifest_action_inputs = [yq_bin, yq_subst_expr]
 
-    if requierements_yaml:
-        write_manifest_action_inputs += [requierements_yaml]
+    if requirements_yaml:
+        write_manifest_action_inputs += [requirements_yaml]
 
     ctx.actions.run_shell(
         inputs = write_manifest_action_inputs,
         outputs = [out_chart_yaml],
-        command = "cat {requierements_manifest}| {yq} --from-file {expr_file} > {out_path}".format(
+        command = "cat {requirements_manifest}| {yq} --from-file {expr_file} > {out_path}".format(
             yq = yq_bin.path,
             expr_file = yq_subst_expr.path,
             out_path = out_chart_yaml.path,
-            requierements_manifest = requierements_yaml.path if requierements_yaml else "",
+            requirements_manifest = requirements_yaml.path if requirements_yaml else "",
         ),
         progress_message = "Writing requirements.yaml file to chart output dir...",
         mnemonic = "SubstRequirementsManifest",
