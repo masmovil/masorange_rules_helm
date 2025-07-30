@@ -225,19 +225,6 @@ def _get_manifest_subst_args(ctx, chart_deps, no_prev_manifest):
     if app_version:
         subst_args["appVersion"] = app_version
 
-    deps_conditions = ctx.attr.deps_conditions or {}
-
-    for i, dep in enumerate(chart_deps):
-        subst_args[".dependencies[%s].name" % i] = dep.name
-
-        if dep.version:
-            subst_args[".dependencies[%s].version" % i] = dep.version
-
-        condition = deps_conditions.get(dep.name)
-
-        if condition:
-            subst_args[".dependencies[%s].condition" % i] = condition
-
     return subst_args
 
 def _get_requirements_subst_args(ctx, chart_deps, no_prev_manifest):
