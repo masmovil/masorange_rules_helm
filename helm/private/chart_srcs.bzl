@@ -371,7 +371,7 @@ def _chart_srcs_impl(ctx):
     # rewrite Chart.yaml to override chart info
     out_chart_yaml = ctx.actions.declare_file(paths.join(ctx.attr.name, chart_name, "Chart.yaml"))
 
-    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, "")
+    yq_subst_expr = _create_yq_substitution_file(ctx, "%s_yq_chart_subst_expr" % ctx.attr.name, _get_manifest_subst_args(ctx, chart_deps, chart_yaml == None))
 
     write_manifest_action_inputs = [yq_bin, yq_subst_expr]
 
