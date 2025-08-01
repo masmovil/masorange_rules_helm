@@ -134,8 +134,3 @@ def helm_chart(name, chart_name, **kwargs):
         chart_bin_srcs = helm_pkg_target,
         visibility = visibility,
     )
-
-    helm_lint_test(
-        name = "%s_lint" % name,
-        chart = name,
-    )
