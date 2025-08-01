@@ -36,7 +36,8 @@ def _curl_fallback(ctx):
 
     ctx.actions.write(
         output = script_template,
-        content = """
+        content = """#!/bin/bash
+        
 EXTRA_ARGS=""
 
 if [ "$HELM_USER" != "" ] && [ "$HELM_PASSWORD" != "" ]; then
@@ -105,7 +106,8 @@ def _helm_push_impl(ctx):
 
     ctx.actions.write(
         output = script_template,
-        content = """
+        content = """#!/bin/bash
+
 EXTRA_ARGS=""
 
 if [ "{REPO_CONFIG_PATH}" != "" ]; then
