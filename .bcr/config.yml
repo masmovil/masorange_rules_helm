@@ -1,0 +1,8 @@
+# Publish-to-BCR configuration.
+# See https://github.com/bazel-contrib/publish-to-bcr#configuration
+#
+# fixed_releaser keeps the BCR PR author stable regardless of who pushed the
+# tag. The address must be a verified email/login on github.com.
+fixed_releaser:
+  login: danigar
+  email: 6217436+danigar@users.noreply.github.com

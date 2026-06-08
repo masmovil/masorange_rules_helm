@@ -1,0 +1,47 @@
+# Publish new releases of masorange_rules_helm to the Bazel Central Registry.
+#
+# This replaces the legacy "Publish to BCR" GitHub App, which is being
+# discontinued after 2026-06-30. The reusable workflow opens a pull request
+# against `masmovil/bazel-central-registry` (the fork), which in turn targets
+# `bazelbuild/bazel-central-registry`.
+#
+# Setup notes (one-time, outside this repo):
+#   1. Create a "classic" PAT with `repo` + `workflow` scopes and save it
+#      as repository secret `BCR_PUBLISH_TOKEN`.
+#   2. Make sure `masmovil/bazel-central-registry` exists as a fork of
+#      `bazelbuild/bazel-central-registry`.
+name: Publish
+
+on:
+  # Chained from release.yaml after the GitHub release is created.
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+    secrets:
+      BCR_PUBLISH_TOKEN:
+        required: true
+  # Manual retry from the GitHub UI.
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: a tag pointing to the commit being published
+        required: true
+        type: string
+
+jobs:
+  publish:
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.3.0
+    with:
+      tag_name: ${{ inputs.tag_name }}
+      # GitHub repository (a fork of `bazelbuild/bazel-central-registry`)
+      # where the publish-to-bcr bot pushes a branch and opens the PR.
+      registry_fork: masmovil/bazel-central-registry
+      draft: false
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    secrets:
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}

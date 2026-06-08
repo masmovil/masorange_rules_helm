@@ -18,8 +18,6 @@
     "repository": [
         "github:masmovil/masorange_rules_helm"
     ],
-    "versions": [
-        "1.5.0"
-    ],
+    "versions": [],
     "yanked_versions": {}
 }
