@@ -1,4 +1,4 @@
-load("@aspect_bazel_lib//lib/private:copy_to_bin.bzl", "copy_files_to_bin_actions")
+load("@aspect_bazel_lib//lib:copy_to_bin.bzl", "copy_files_to_bin_actions")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:shell.bzl", "shell")
