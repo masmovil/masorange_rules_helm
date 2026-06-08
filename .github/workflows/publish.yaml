@@ -39,6 +39,14 @@ jobs:
       # where the publish-to-bcr bot pushes a branch and opens the PR.
       registry_fork: masmovil/bazel-central-registry
       draft: false
+      # Skip attestation generation: our release.yaml uses
+      # `softprops/action-gh-release@v2` directly rather than the
+      # `release_ruleset.yaml` reusable workflow from bazel-contrib/.github,
+      # so it does not upload an `<artifact>.intoto.jsonl` to the release.
+      # With `attest: true` (the default), publish-to-bcr tries to fetch
+      # that attestation from the release and fails with 404.
+      # See https://github.com/bazel-contrib/publish-to-bcr/blob/v1.3.0/.github/workflows/publish.yaml#L62
+      attest: false
     permissions:
       attestations: write
       contents: write
