@@ -5,6 +5,9 @@ on:
         tags:
             - 'v*.*.*'
 
+permissions:
+    contents: write
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -28,3 +31,18 @@ jobs:
                   body_path: release_notes.txt
                   files: masorange_rules_helm-*.tar.gz
                   fail_on_unmatched_files: true
+
+    # After the GitHub release is created, open a PR against
+    # `bazelbuild/bazel-central-registry` from the `masmovil/bazel-central-registry`
+    # fork. Replaces the legacy "Publish to BCR" GitHub App (sunset 2026-06-30).
+    publish:
+        needs: build
+        permissions:
+            attestations: write
+            contents: write
+            id-token: write
+        uses: ./.github/workflows/publish.yaml
+        with:
+            tag_name: ${{ github.ref_name }}
+        secrets:
+            BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
