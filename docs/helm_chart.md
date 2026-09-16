@@ -83,6 +83,25 @@ chart_srcs(
 )
 ```
 
+Chart files may be produced by other rules (a `Chart.yaml` written by `write_file` or a `genrule`, for instance) and mixed with
+checked-in sources. The chart layout is computed from workspace-relative paths, so generated files (placed under `bazel-out`) and
+source files of the same chart resolve to the same chart root. Every file in `srcs` has to live under that root: the directory of
+the outermost `Chart.yaml` (or `values.yaml`), or `path_to_chart` when neither is provided.
+
+```starlark
+write_file(
+    name = "manifest",
+    out = "chart/Chart.yaml",
+    content = ["apiVersion: v2", "name: example", "version: 1.0.0"],
+)
+
+chart_srcs(
+    name = "chart",
+    chart_name = "example",
+    srcs = [":manifest"] + glob(["chart/templates/**", "chart/values.yaml"]),
+)
+```
+
 For compatibility reasons, some attributes are still supported but marked as deprecated. Its use is discouraged.
 
 **ATTRIBUTES**
@@ -100,14 +119,14 @@ For compatibility reasons, some attributes are still supported but marked as dep
 | <a id="chart_srcs-chart_name"></a>chart_name |  Name of the chart. It will be modified in the name field of the Chart.yaml   | String | required |  |
 | <a id="chart_srcs-deps_conditions"></a>deps_conditions |  A dictionary containing the conditions that the dependencies of the chart should met to be rendered by helm. The key has to be the name of the dependency chart. The value will be the condition that the values of the chart should have. Check helm doc for more info https://helm.sh/docs/topics/charts/#the-chartyaml-file   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
 | <a id="chart_srcs-description"></a>description |  Helm chart manifest description. The value is replaced in the output Chart.yaml manifest.   | String | optional |  `""`  |
-| <a id="chart_srcs-force_repository_append"></a>force_repository_append |  A flag to specify if @ should be appended to the repository value in the chart values.yaml (in case `image` rule attribute is specified). The rules will look for the specified repository value inside the values.yaml. This is intended to meet image url with digest format: `gcr.io/container@sha256:a12e258c58ab92be22e403d08c8ef7eefd6119235eddca01309fe6b21101e100`. If you have this already covered in your deployment templates, set this attr to false. If the flag is set to true, the image rule attr is provided and no `values_repo_yaml_path` is set, the rule will look for the default path of the repository value. .image.repository   | Boolean | optional |  `True`  |
+| <a id="chart_srcs-force_repository_append"></a>force_repository_append |  A flag to specify if @ should be appended to the repository value in the chart values.yaml (in case `image` rule attribute is specified). The rules will look for the specified repository value inside the values.yaml. This is intended to meet image url with digest format: `gcr.io/container@sha256:a12e258c58ab92be22e403d08c8ef7eefd6119235eddca01309fe6b21101e100`. If you have this already covered in your deployment templates, set this attr to false. If the flag is set to true, the image rule attr is provided and no `values_repo_yaml_path` is set, the rule will look for the default path of the repository value. .image.repository The repository value is read from the chart values.yaml; when the chart has no values.yaml file it is left untouched.   | Boolean | optional |  `True`  |
 | <a id="chart_srcs-helm_chart_version"></a>helm_chart_version |  [Deprecated] Helm chart version. Use version instead.   | String | optional |  `""`  |
 | <a id="chart_srcs-image"></a>image |  Reference to image rule use to interpolate the image sha256 in the chart values.yaml. If provided, the sha256 of the image will be placed in the output values.yaml of the chart in the yaml path provided by `values_tag_yaml_path` attribute. Only oci_image rules are supported.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="chart_srcs-image_digest"></a>image_digest |  Reference to oci_image digest file. Used internally by the macro (do not use it).   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="chart_srcs-image_repository"></a>image_repository |  [Deprecated] You can use values attr dict to modify repository values.   | String | optional |  `""`  |
 | <a id="chart_srcs-image_tag"></a>image_tag |  [Deprecated] Use image attribute instead.   | String | optional |  `""`  |
 | <a id="chart_srcs-package_name"></a>package_name |  [Deprecated] Helm chart name. Use chart_name instead.   | String | optional |  `""`  |
-| <a id="chart_srcs-path_to_chart"></a>path_to_chart |  Attribute to specify the path to the root of the chart. This attribute is mandatory if neither Chart.yaml nor values.yaml are provided, and the chart srcs attr is not empty to determinate where in the path of the source files is located the root of the helm chart.   | String | optional |  `""`  |
+| <a id="chart_srcs-path_to_chart"></a>path_to_chart |  Workspace-relative path to the root directory of the chart. It is only used when `srcs` contains neither a Chart.yaml nor a values.yaml (otherwise the root is the directory of the outermost one), and it is mandatory in that case if `srcs` is not empty.   | String | optional |  `""`  |
 | <a id="chart_srcs-stamp"></a>stamp |  Whether to encode build information into the output. Possible values:<br><br>- `stamp = 1`: Always stamp the build information into the output, even in     [--nostamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) builds.     This setting should be avoided, since it is non-deterministic.     It potentially causes remote cache misses for the target and     any downstream actions that depend on the result. - `stamp = 0`: Never stamp, instead replace build information by constant values.     This gives good build result caching. - `stamp = -1`: Embedding of build information is controlled by the     [--[no]stamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) flag.     Stamped targets are not rebuilt unless their dependencies change.   | Integer | optional |  `-1`  |
 | <a id="chart_srcs-templates"></a>templates |  A list of files that will be added to the chart. They will be added as addition to the chart templates refernced in the `srcs` attribute.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="chart_srcs-values"></a>values |  A dictionary of key values to be written in to the chart values. keys: `yaml.path` or `.yaml.path` values:  the value to be replaced inside the Chart values.yaml. This attr supports use of stamped values. To provide a stamped value you have to use ${STAMP_VARIABLE_NAME} as value of the dict with your stamped variable key. Make sure to enable stamping in your rule with the attribute `stamp`.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
