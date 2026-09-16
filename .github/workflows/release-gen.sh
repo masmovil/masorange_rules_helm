@@ -16,7 +16,7 @@ git archive --format=tar --prefix="${PREFIX}/" "${TAG}" | gzip >"$ARCHIVE"
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
 cat <<EOF
-# Using Bzlmod with Bazel 6:
+# Using Bzlmod:
 
 Add to your MODULE.bazel file:
 

@@ -8,15 +8,15 @@ _DOC = """
   load("//helm:defs.bzl", "helm_uninstall")
   ```
 
-  This rule builds an executable. Use `run` instead of `build` to be uninstall the helm release.
+  This rule builds an executable. Use `run` instead of `build` to uninstall the helm release.
 """
 
 _ATTRS = {
   "namespace": attr.string(mandatory = False, doc = "The namespace where the helm release is installed."),
   "namespace_dep": attr.label(mandatory = False, doc = "A reference to a `k8s_namespace` rule from where to extract the namespace where the helm release is installed."),
-  "release_name": attr.string(mandatory = True, doc = "The name of the helm release to be installed or upgraded."),
+  "release_name": attr.string(mandatory = True, doc = "The name of the helm release to uninstall."),
   "kubernetes_context": attr.string(mandatory = False, doc = "The name of the kubeconfig context to use"),
-  "wait": attr.bool(default = True, doc = "Helm flag to wait for all resources to be created to exit."),
+  "wait": attr.bool(default = True, doc = "Helm flag to wait until all the resources of the release are deleted before returning."),
 }
 def _helm_uninstall_impl(ctx):
     """Uninstall a helm release.

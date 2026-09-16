@@ -20,9 +20,9 @@ _DOC = """
     ```starlark
     # With bzlmod, you typically will:
     # MODULE.bazel
-    bazel_dep(name = "masorange_rules_helm", version = "1.3.1")
+    bazel_dep(name = "masorange_rules_helm", version = "1.8.2")
 
-    helm = use_extension("@masmovil_bazel_rules//:extensions.bzl", "utils")
+    helm = use_extension("@masorange_rules_helm//:extensions.bzl", "utils")
 
     helm.pull(
         name = "some_chart",
