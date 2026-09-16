@@ -15,11 +15,11 @@ def helm_chart(name, chart_name, **kwargs):
     load("//helm:defs.bzl", "helm_chart")
     ```
 
-    It also defines a %name%_lint test target to be able to test that your chart is well-formed (using `helm lint`).
+    Use [helm_lint_test](helm_lint.md#helm_lint_test) on the target to check that the packaged chart is well-formed (`helm lint`).
 
     To make the output reproducible this macro does not use `helm package` to package the chart into a versioned chart archive file.
     It uses `pkg_tar` bazel rule instead to create the archive file. Check this to find more info about it:
-    - https://github.com/masmovil/bazel-rules/issues/55
+    - https://github.com/masmovil/masorange_rules_helm/issues/55
     - https://github.com/helm/helm/issues/3612#issuecomment-525340295
 
     The output name of the packaged chart will be different depending on the provided inputs. If you provide a `version` attribute to the `helm_chart` rule, the rule will append the chart version to the packaged targz.
@@ -29,7 +29,7 @@ def helm_chart(name, chart_name, **kwargs):
 
     Note: This does not apply to `version_manifest`. If you provide the `version_manifest` attribute, the output generated will not have the version appended to the name.
 
-    This macro exports some providers to share info about charts between rules. Check [helm_chart providers](#providers).
+    This macro exports some providers to share info about charts between rules. Check [helm_chart providers](#ChartInfo).
 
     The args are the same that the `chart_srcs` rule, check [chart_srcs](#chart_srcs).
 

@@ -14,7 +14,7 @@ helm_push(
     repository_url = "oci://docker.pkg.dev/repository/helm-charts"
 )
 
-# already declared in helm_chart macro as `package_lint`
+# helm_chart does not declare a lint target: add one explicitly with helm_lint_test
 helm_lint_test(
     name = "lint",
     chart = ":package",

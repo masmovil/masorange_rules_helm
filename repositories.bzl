@@ -1,5 +1,6 @@
-# Internal use only.
-# Install rule dependencies for local testing pourposes only (rule authors).
+# Dependencies for WORKSPACE (non-bzlmod) users: call masorange_rules_helm_repositories() and then
+# masorange_rules_helm_configure() from //:config.bzl, as shown in the release notes. Bzlmod users get
+# these through MODULE.bazel and do not need this file.
 
 load("//:toolchains.bzl", "register_helm_toolchains", "register_sops_toolchains", "register_gcloud_toolchains", "register_kubectl_toolchains")
 load("//helm/private:helm_toolchain.bzl", "HELM_DEFAULT_VERSION")
