@@ -17,6 +17,8 @@ bazel_dep(name = "rules_oci", version = "1.6.0")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True)
+# sh_test/sh_binary are no longer native rules in Bazel 9; the test helpers load them from rules_shell.
+bazel_dep(name = "rules_shell", version = "0.4.1", dev_dependency = True)
 
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 oci.pull(

@@ -416,7 +416,6 @@ apiVersion: v2
 name: declarative_values
 version: 3.0.45
 appVersion: 0.1.0
-apiVersion: v2
 description: Description of the declarative chart
 """,
   expected_values = """
