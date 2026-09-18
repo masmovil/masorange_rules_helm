@@ -168,7 +168,7 @@
   "moduleExtensions": {
     "//:extensions.bzl%toolchains": {
       "general": {
-        "bzlTransitiveDigest": "16tkqykXausJMDhc6Dk1UPH3JcdQGu/kZJnnbOMcCD0=",
+        "bzlTransitiveDigest": "QtjfPWKyvRoTrzlJUZZY452vBz9Afl1uOJ4+U2mfP30=",
         "usagesDigest": "kgLKLdL5xqQXXhnlV+YnR9i0emOuz4rELlHQow0E2jc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

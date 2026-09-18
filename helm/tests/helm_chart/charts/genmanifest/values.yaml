@@ -1,0 +1,5 @@
+labels:
+  somelabel: sourcevalue
+image:
+  tag: latest
+  repository: genmanifest

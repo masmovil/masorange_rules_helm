@@ -1,8 +1,8 @@
-load("@aspect_bazel_lib//lib:diff_test.bzl", "diff_test")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
-load("@aspect_bazel_lib//lib:tar.bzl", "tar")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 def add_prefix_to_paths(prefix, files_path):
   return [paths.join(prefix, path) for path in files_path]
@@ -18,27 +18,40 @@ def compare_to_yaml_file_test(name, yaml_file_path, explicit_yaml_to_compare, ch
     write_file(
         name = expected_yaml_rulename,
         out = "%s_expected.yaml" % name,
-        content = [explicit_yaml_to_compare],
+        content = [explicit_yaml_to_compare.strip()],
     )
 
+    # Both yaml files are normalized with yq (sorted keys, properties output, blank lines dropped) before
+    # being diffed. The script fails loudly when yq or the packaged file are missing: an empty process
+    # substitution on both sides would otherwise make `diff` succeed without comparing anything.
     write_file(
         name = sh_test_rulename,
         out = "%s_diff.sh" % name,
         content = [
-            "diff <($1 -P 'sort_keys(..)' -o=props $2) <($1 -P 'sort_keys(..)' -o=props $3)"
+            "#!/usr/bin/env bash",
+            "set -euo pipefail",
+            "yq=\"$1\"; actual=\"$2\"; expected=\"$3\"",
+            "[ -x \"$yq\" ] || { echo \"yq binary not found at $yq\" >&2; exit 1; }",
+            "[ -f \"$actual\" ] || { echo \"$actual not found in the packaged chart\" >&2; exit 1; }",
+            "actual_props=\"$(\"$yq\" -P 'sort_keys(..)' -o=props \"$actual\" | sed '/^[[:space:]]*$/d')\"",
+            "expected_props=\"$(\"$yq\" -P 'sort_keys(..)' -o=props \"$expected\" | sed '/^[[:space:]]*$/d')\"",
+            "diff <(echo \"$actual_props\") <(echo \"$expected_props\")",
         ],
     )
 
-    native.sh_test(
+    # The yq binary is addressed with $(rootpath): tests run from their runfiles tree, where the
+    # execroot-relative path exposed by $(YQ_BIN) does not exist since Bazel 8 dropped
+    # --legacy_external_runfiles.
+    sh_test(
         name = test_rulename,
+        size = "small",
         srcs = [sh_test_rulename],
         data = ["@yq_toolchains//:resolved_toolchain", expected_yaml_rulename, chart],
         args = [
-            "$(YQ_BIN)",
+            "$(rootpath @yq_toolchains//:resolved_toolchain)",
             yaml_file_path,
             "$(location %s)" % expected_yaml_rulename
         ],
-        toolchains = ["@yq_toolchains//:resolved_toolchain"],
     )
 
     return  test_rulename
@@ -50,11 +63,11 @@ def untar_chart(name, chart_tar, out_dir):
         content = [
             "#!/usr/bin/env bash",
             "set -e",
-            "$BSDTAR_BIN $@",
+            '"$BSDTAR_BIN" "$@"',
         ],
     )
 
-    native.sh_binary(
+    sh_binary(
         name = "{}_tar_bin".format(name),
         srcs = [ ":{}_tar_sh".format(name) ],
     )
@@ -90,19 +103,6 @@ def chart_test(name, chart, chart_name, prefix_srcs = "", expected_files=[], exp
         out_dir = "%s_out_dir" % unpacked_chart_rule_name,
     )
 
-    # # unpack helm_chart output targz
-    # run_binary(
-    #     name = unpacked_chart_rule_name,
-
-    #     out_dirs = ["%s_out_dir" % unpacked_chart_rule_name],
-    # )
-    # native.genrule(
-    #     name = unpacked_chart_rule_name,
-    #     outs = ["%s_out_dir" % unpacked_chart_rule_name],
-    #     tools = [chart],
-    #     cmd_bash = "mkdir -p $@ && tar -xvf $(location %s) -C $@" % chart,
-    # )
-
     tests = []
 
     if expected_values != "":
@@ -129,7 +129,9 @@ def chart_test(name, chart, chart_name, prefix_srcs = "", expected_files=[], exp
         name = sh_diff_rulename,
         out = "%s_src_diff.sh" % name,
         content = [
-            "diff $1 $2"
+            "#!/usr/bin/env bash",
+            "set -euo pipefail",
+            "diff \"$1\" \"$2\"",
         ],
     )
 
@@ -139,8 +141,9 @@ def chart_test(name, chart, chart_name, prefix_srcs = "", expected_files=[], exp
         # test_diff of chart src file vs dest files
         src_diff_test_rulename = "%s_%s_src_diff_test_%d" % (name, paths.basename(expected_file), i)
         src_orig_path = paths.join(prefix_srcs, expected_file)
-        native.sh_test(
+        sh_test(
             name = src_diff_test_rulename,
+            size = "small",
             srcs = [sh_diff_rulename],
             data = [src_orig_path, unpacked_chart_rule_name],
             args = [
@@ -185,8 +188,9 @@ def chart_test(name, chart, chart_name, prefix_srcs = "", expected_files=[], exp
             # test_diff of chart src file vs dest files
             src_diff_test_rulename = "%s_%s_%s_src_diff_test_%d" % (dep_name, name, paths.basename(file), i)
             dep_file_src = paths.join(dep_prefix_src, file)
-            native.sh_test(
+            sh_test(
                 name = src_diff_test_rulename,
+                size = "small",
                 srcs = [sh_diff_rulename],
                 data = [dep_file_src, unpacked_chart_rule_name],
                 args = [

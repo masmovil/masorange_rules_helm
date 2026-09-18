@@ -1,0 +1,22 @@
+load("@masorange_rules_helm//helm:defs.bzl", "helm_chart", "helm_lint_test")
+
+# Chart.yaml is produced by another rule (a genrule here, it could be any rule emitting a file) while
+# values.yaml and the templates are checked in under test_chart/. Both kinds of files resolve to the
+# same chart root, so the packaged chart keeps the regular helm layout.
+genrule(
+    name = "manifest",
+    outs = ["test_chart/Chart.yaml"],
+    cmd = "printf 'apiVersion: v2\\nname: placeholder\\nversion: 0.0.0\\ndescription: Chart.yaml generated at build time\\n' > $@",
+)
+
+helm_chart(
+    name = "package",
+    chart_name = "generated-chart",
+    version = "1.0.0",
+    srcs = [":manifest"] + glob(["test_chart/**"]),
+)
+
+helm_lint_test(
+    name = "lint",
+    chart = ":package",
+)
