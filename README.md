@@ -250,7 +250,7 @@ Rule implementations live under `<area>/private/`; the public API is re-exported
 
 ## Releases
 
-Pushing a tag `vX.Y.Z` runs [`release.yaml`](.github/workflows/release.yaml): it runs the tests, builds the source archive, creates the GitHub release with the installation snippet and opens the publication PR against the [Bazel Central Registry](https://registry.bazel.build/modules/masorange_rules_helm) through [`publish.yaml`](.github/workflows/publish.yaml).
+Pushing a tag `vX.Y.Z` runs [`release.yaml`](.github/workflows/release.yaml): it runs the tests, builds the source archive, creates the GitHub release with the installation snippet and, through [`publish.yaml`](.github/workflows/publish.yaml), pushes the registry entry to the `masmovil/bazel-central-registry` fork. The publish job log ends with the URL that opens the pull request against the [Bazel Central Registry](https://registry.bazel.build/modules/masorange_rules_helm) with one click (the fine-grained token used by the workflow cannot open it itself). `publish.yaml` can also be re-run by hand from the Actions tab with the tag name.
 
 ## License
 

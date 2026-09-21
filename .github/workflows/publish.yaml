@@ -6,10 +6,20 @@
 # `bazelbuild/bazel-central-registry`.
 #
 # Setup notes (one-time, outside this repo):
-#   1. Create a "classic" PAT with `repo` + `workflow` scopes and save it
-#      as repository secret `BCR_PUBLISH_TOKEN`.
+#   1. Create a fine-grained PAT (resource owner: the `masmovil` organization) with
+#      repository access limited to `masmovil/bazel-central-registry` and the
+#      `Contents: read and write` permission (Metadata: read is implicit). Save it as
+#      repository secret `BCR_PUBLISH_TOKEN` and renew it before it expires.
 #   2. Make sure `masmovil/bazel-central-registry` exists as a fork of
-#      `bazelbuild/bazel-central-registry`.
+#      `bazelbuild/bazel-central-registry`. Only its `main` is covered by the
+#      organization rulesets; the entry branches pushed by this workflow are not.
+#
+# Fine-grained PATs cannot open pull requests against repositories they do not own
+# (https://github.com/github/roadmap/issues/600), so `open_pull_request` is false: the
+# workflow pushes the entry branch to the fork and the "Open pull request manually" step
+# of the publish job prints the URL that opens the PR against the BCR with one click.
+# Open it as the release author: maintainers listed in the module's metadata.json get
+# their entries approved automatically once the presubmit is green.
 name: Publish
 
 on:
@@ -39,6 +49,8 @@ jobs:
       # where the publish-to-bcr bot pushes a branch and opens the PR.
       registry_fork: masmovil/bazel-central-registry
       draft: false
+      # See the header: the fine-grained token can push the branch but not open the PR.
+      open_pull_request: false
       # Skip attestation generation: our release.yaml uses
       # `softprops/action-gh-release@v2` directly rather than the
       # `release_ruleset.yaml` reusable workflow from bazel-contrib/.github,
