@@ -6,6 +6,7 @@ load(":charts.bzl", "get_charts")
 load("@rules_oci//oci:defs.bzl", "oci_image")
 load("//helm/tests/helm_chart:chart_test.bzl", "chart_test", "add_prefix_to_paths")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 
 [
@@ -722,3 +723,55 @@ image:
 """ % IMAGE_SHA_256,
 )
 
+# `tags` must reach every target the macro declares (chart_srcs, pkg_files, pkg_tar and the
+# providers target): consumers rely on --build_tag_filters or `manual` applying to the whole
+# chart, otherwise a wildcard build still reaches the image through an untagged target.
+# The check queries the dependency closure of the chart for the tag and diffs the result
+# against the expected list of targets.
+helm_chart(
+  name = "chart_a_tagged",
+  chart_name = "a_tagged",
+  srcs = add_prefix_to_paths("charts/a", chart_a_srcs),
+  version = "0.0.0",
+  tags = ["manual", "flavour_tag"],
+)
+
+genquery(
+  name = "chart_a_tagged_query",
+  expression = "attr(tags, flavour_tag, deps(//helm/tests/helm_chart:chart_a_tagged))",
+  scope = [":chart_a_tagged"],
+)
+
+write_file(
+  name = "chart_a_tagged_expected",
+  out = "chart_a_tagged_expected.txt",
+  content = [
+    "//helm/tests/helm_chart:chart_a_tagged",
+    "//helm/tests/helm_chart:chart_a_tagged_0.0.0_package",
+    "//helm/tests/helm_chart:chart_a_tagged_src_helm_files",
+    "//helm/tests/helm_chart:chart_a_tagged_tar",
+    "",
+  ],
+)
+
+diff_test(
+  name = "chart_a_tagged_tags_test",
+  file1 = ":chart_a_tagged_query",
+  file2 = ":chart_a_tagged_expected",
+)
+
+# `testonly` has to reach the same targets: otherwise pkg_files (not testonly) depending on the
+# testonly chart_srcs fails at analysis and a testonly chart cannot be packaged at all.
+helm_chart(
+  name = "chart_a_testonly",
+  chart_name = "a_testonly",
+  srcs = add_prefix_to_paths("charts/a", chart_a_srcs),
+  version = "0.0.0",
+  testonly = True,
+)
+
+build_test(
+  name = "chart_a_testonly_build_test",
+  targets = [":chart_a_testonly"],
+  testonly = True,
+)

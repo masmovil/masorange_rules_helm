@@ -173,6 +173,9 @@ Bazel macro function to package a helm chart in to a targz archive file.
 The macro is intended to be used as the public API for packaging a chart. It is a wrapper around `chart_srcs` rule. All the args are propagated to `chart_srcs` rule.
 See [chart_srcs](#chart_srcs) arguments to see the available config.
 
+`tags` and `testonly` are forwarded to every target the macro declares, so tagging a chart (`manual`, a tag selected with
+`--build_tag_filters`...) applies to the whole chart, including the packaging targets that depend on the image.
+
 
 To load the rule use:
 ```starlark

@@ -10,6 +10,9 @@ def helm_chart(name, chart_name, **kwargs):
     The macro is intended to be used as the public API for packaging a chart. It is a wrapper around `chart_srcs` rule. All the args are propagated to `chart_srcs` rule.
     See [chart_srcs](#chart_srcs) arguments to see the available config.
 
+    `tags` and `testonly` are forwarded to every target the macro declares, so tagging a chart (`manual`, a tag selected with
+    `--build_tag_filters`...) applies to the whole chart, including the packaging targets that depend on the image.
+
     To load the rule use:
     ```starlark
     load("//helm:defs.bzl", "helm_chart")
@@ -100,6 +103,15 @@ def helm_chart(name, chart_name, **kwargs):
     # TODO: change how visibility is propagated
     visibility = kwargs.get("visibility") or ["//visibility:public"]
 
+    # Attributes forwarded to every target the macro declares (chart_srcs receives them through
+    # **kwargs): a `manual` tag or a --build_tag_filters selection then applies to the whole chart
+    # instead of stopping at the top-level target while an untagged pkg_files/pkg_tar still pulls
+    # the image in a wildcard build, and testonly charts can be packaged at all.
+    common_attrs = {
+        "tags": kwargs.get("tags") or [],
+        "testonly": kwargs.get("testonly", False),
+    }
+
     chart_srcs_attrs = dict({}, **kwargs)
 
     if image:
@@ -116,6 +128,7 @@ def helm_chart(name, chart_name, **kwargs):
         srcs = [helm_pkg_target],
         strip_prefix = strip_prefix.from_pkg(helm_pkg_target),
         visibility = visibility,
+        **common_attrs
     )
 
     pkg_tar(
@@ -124,6 +137,7 @@ def helm_chart(name, chart_name, **kwargs):
         extension = "tgz",
         srcs = [helm_pkg_out_strip_target],
         visibility = visibility,
+        **common_attrs
     )
 
     helm_chart_providers(
@@ -133,4 +147,5 @@ def helm_chart(name, chart_name, **kwargs):
         chart_version = chart_version,
         chart_bin_srcs = helm_pkg_target,
         visibility = visibility,
+        **common_attrs
     )
