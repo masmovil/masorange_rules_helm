@@ -20,7 +20,7 @@ _DOC = """
     ```starlark
     # With bzlmod, you typically will:
     # MODULE.bazel
-    bazel_dep(name = "masorange_rules_helm", version = "1.8.2")
+    bazel_dep(name = "masorange_rules_helm", version = "1.9.0")
 
     helm = use_extension("@masorange_rules_helm//:extensions.bzl", "utils")
 
