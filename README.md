@@ -38,7 +38,7 @@ Check the [releases page](https://github.com/masmovil/masorange_rules_helm/relea
 
 ```starlark
 # MODULE.bazel
-bazel_dep(name = "masorange_rules_helm", version = "1.8.2")
+bazel_dep(name = "masorange_rules_helm", version = "1.9.0")
 ```
 
 The module registers the `helm`, `sops`, `kubectl` and `gcloud` toolchains for you. See [Toolchains](#toolchains) to pin different versions.
@@ -51,8 +51,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "masorange_rules_helm",
     sha256 = "<sha256 from the release notes>",
-    strip_prefix = "masorange_rules_helm-1.8.2",
-    urls = ["https://github.com/masmovil/masorange_rules_helm/releases/download/v1.8.2/masorange_rules_helm-v1.8.2.tar.gz"],
+    strip_prefix = "masorange_rules_helm-1.9.0",
+    urls = ["https://github.com/masmovil/masorange_rules_helm/releases/download/v1.9.0/masorange_rules_helm-v1.9.0.tar.gz"],
 )
 
 load("@masorange_rules_helm//:repositories.bzl", "masorange_rules_helm_repositories")
@@ -251,6 +251,8 @@ Rule implementations live under `<area>/private/`; the public API is re-exported
 ## Releases
 
 Pushing a tag `vX.Y.Z` runs [`release.yaml`](.github/workflows/release.yaml): it runs the tests, builds the source archive, creates the GitHub release with the installation snippet and opens the publication PR against the [Bazel Central Registry](https://registry.bazel.build/modules/masorange_rules_helm) through [`publish.yaml`](.github/workflows/publish.yaml).
+
+After a release, bump the version in the installation snippets of this README (registry.bazel.build renders this file as the module page) and in the `helm_pull` docstring.
 
 ## License
 
